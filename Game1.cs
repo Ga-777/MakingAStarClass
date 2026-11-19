@@ -20,10 +20,19 @@ namespace MakingAStarClass
         Texture2D starTexture;
         star star1;
 
-        List<star> stars;
-        Random random;
+        Vector2 starSpeed;
 
+        List<star> stars;
+
+        Random random;
+        int ramdomNumber, randomSize;
+        Color randomColor;
+
+        float randomOpacity;
         
+
+        int speed = -1;
+        int speed2 = -2;
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -38,21 +47,65 @@ namespace MakingAStarClass
             _graphics.PreferredBackBufferWidth = window.Width;
             _graphics.PreferredBackBufferHeight = window.Height;
             _graphics.ApplyChanges();
-
+            
             shipRect = new Rectangle(30,150, 150, 40);
             random = new Random();
-
+            randomColor = new Color();
             base.Initialize();
             stars = new List<star>();
-            for (int i = 0; i < 150; i++)
+            for (int i = 0; i < 170; i++)
             {
+                randomSize = random.Next(2, 7);
+                ramdomNumber = random.Next(1, 7);
+                randomOpacity = (float)random.NextDouble();
+
+                if (randomSize < 4)
+                {
+                    starSpeed = new Vector2(speed, 0);
+                }
+                else
+                {
+                    starSpeed = new Vector2(speed2, 0);
+                }
+
+
+
+                if (ramdomNumber == 1)
+                {
+                    randomColor = Color.White;
+                }
+                else if (ramdomNumber == 2)
+                {
+                    randomColor = Color.Yellow;
+                }
+                else if (ramdomNumber == 3)
+                {
+                    randomColor = Color.Aqua;
+                }
+                else if (ramdomNumber == 4)
+                {
+                    randomColor = Color.Red;
+                }
+                else if (ramdomNumber == 5)
+                {
+                    randomColor = Color.Orange;
+                }
+                else if (ramdomNumber == 6)
+                {
+                    randomColor = Color.Purple;
+                }
+               
                 int X, Y;
                 X = random.Next(window.Width);
                 Y = random.Next(window.Height);
-                Rectangle star = new Rectangle(X, Y, 3, 3);
-                stars.Add(new star(star, new Vector2(-2, 0), starTexture));
+                Rectangle star = new Rectangle(X, Y, randomSize, randomSize);
+               
+                   
+               
+                stars.Add(new star(star, starSpeed, starTexture, randomColor * randomOpacity));
+               
             }
-            star1 = new star(new Rectangle(100,100,2,2),new Vector2(-2,0), starTexture);
+            star1 = new star(new Rectangle(100,100,2,2),starSpeed, starTexture, randomColor * randomOpacity);
         }
 
         protected override void LoadContent()
@@ -68,11 +121,22 @@ namespace MakingAStarClass
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
             Keyboard.GetState();
+            
 
-            if (Keyboard.GetState().IsKeyDown(Keys.W))
+
+
+
+            if (Keyboard.GetState().IsKeyDown(Keys.Up))
             {
-
+                shipRect.Y -= 2;
             }
+            if (Keyboard.GetState().IsKeyDown(Keys.Down))
+            {
+                shipRect.Y += 2;
+            }
+
+            
+            
 
             foreach (star star in stars)
             {
@@ -80,6 +144,7 @@ namespace MakingAStarClass
             }
             // TODO: Add your update logic here
             star1.Update(window);
+            
             base.Update(gameTime);
         }
 
