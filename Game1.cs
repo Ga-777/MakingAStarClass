@@ -22,7 +22,9 @@ namespace MakingAStarClass
 
         Vector2 starSpeed;
 
-        List<star> stars;
+        Texture2D shipWindowTexture;
+
+		List<star> stars;
 
         Random random;
         int ramdomNumber, randomSize;
@@ -31,9 +33,16 @@ namespace MakingAStarClass
         float randomOpacity;
         
 
-        int speed = -1;
-        int speed2 = -2;
-        public Game1()
+        bool windowOpen = false;
+
+		MouseState MouseState;
+
+		float speed = -1;
+        float speed2 = -2;
+
+		int speedBoost = 0;
+
+		public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -47,8 +56,9 @@ namespace MakingAStarClass
             _graphics.PreferredBackBufferWidth = window.Width;
             _graphics.PreferredBackBufferHeight = window.Height;
             _graphics.ApplyChanges();
-            
-            shipRect = new Rectangle(30,150, 150, 40);
+			
+
+			shipRect = new Rectangle(30,150, 150, 40);
             random = new Random();
             randomColor = new Color();
             base.Initialize();
@@ -58,10 +68,10 @@ namespace MakingAStarClass
                 randomSize = random.Next(2, 7);
                 ramdomNumber = random.Next(1, 7);
                 randomOpacity = (float)random.NextDouble();
-
-                if (randomSize < 4)
+				
+				if (randomSize < 4)
                 {
-                    starSpeed = new Vector2(speed, 0);
+                    starSpeed = new Vector2(speed , 0);
                 }
                 else
                 {
@@ -113,40 +123,91 @@ namespace MakingAStarClass
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             starTexture = Content.Load<Texture2D>("image/circle");
             shipTexture = Content.Load<Texture2D>("image/UNSCship");
-            // TODO: use this.Content to load your game content here
-        }
+			shipWindowTexture = Content.Load<Texture2D>("image/spaceshipwindow");
+			// TODO: use this.Content to load your game content here
+		}
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
-            Keyboard.GetState();
-            
+			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+				Exit();
 
+			MouseState = Mouse.GetState();
 
+			if (Keyboard.GetState().IsKeyDown(Keys.Right))
+			{
+				speed -= 0.0005f;
+				speed2 -= 0.001f;
+				if (speedBoost < 15)
+                {
+					speedBoost++;
+				}
+					
+			}
 
+			if (Keyboard.GetState().IsKeyDown(Keys.Left))
+			{
+                if (speed < -0.5f)
+                {
+					speed += 0.0005f;
+				}
+                
+				if (speed2 < -1.0f) 
+                {
+					speed2 += 0.001f;
+				}
+				if (speedBoost > 0)
+                {
+					speedBoost--;
+				}
+					
+			}
 
-            if (Keyboard.GetState().IsKeyDown(Keys.Up))
-            {
-                shipRect.Y -= 2;
-            }
-            if (Keyboard.GetState().IsKeyDown(Keys.Down))
-            {
-                shipRect.Y += 2;
-            }
+			if (Keyboard.GetState().IsKeyDown(Keys.Up))
+			{
+				if (shipRect.Y <= 0)
+				{
+					shipRect.Y -= 0;
+				}
+				else
+				{
+					shipRect.Y -= 2;
+				}
+			}
 
-            
-            
+			if (Keyboard.GetState().IsKeyDown(Keys.Down))
+			{
+				if (shipRect.Y >= 550)
+				{
+					shipRect.Y += 0;
+				}
+				else
+				{
+					shipRect.Y += 2;
+				}
+			}
 
-            foreach (star star in stars)
-            {
-                star.Update(window);
-            }
-            // TODO: Add your update logic here
-            star1.Update(window);
-            
-            base.Update(gameTime);
-        }
+            if (MouseState.LeftButton == ButtonState.Pressed && MouseState.Position.X >= shipRect.X && MouseState.Position.X <= shipRect.X + shipRect.Width && MouseState.Position.Y >= shipRect.Y && MouseState.Position.Y <= shipRect.Y + shipRect.Height)
+			{
+				windowOpen = true;
+			}
+			else if (MouseState.RightButton == ButtonState.Pressed)
+			{
+				windowOpen = false;
+			}
+
+			int steps = 1 + speedBoost;
+			for (int step = 0; step < steps; step++)
+			{
+				foreach (star star in stars)
+				{
+					star.Update(window);
+				}
+				star1.Update(window);
+			}
+
+			base.Update(gameTime);
+		}
 
         protected override void Draw(GameTime gameTime)
         {
@@ -162,7 +223,16 @@ namespace MakingAStarClass
             {
                 star.Draw(_spriteBatch);
             }
-            _spriteBatch.Draw(shipTexture, shipRect, Color.White);
+
+            if (windowOpen == true)
+			{
+				_spriteBatch.Draw(shipWindowTexture, window, Color.White);
+			}
+			else
+			{
+				_spriteBatch.Draw(shipTexture, shipRect, Color.White);
+			}
+			
 
 
 
